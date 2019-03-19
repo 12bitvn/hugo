@@ -18,6 +18,10 @@ import (
 	"github.com/tsuyoshiwada/go-gitlog"
 	"path/filepath"
 	"strings"
+
+	"github.com/bep/gitmap"
+	"github.com/gohugoio/hugo/config"
+	"github.com/gohugoio/hugo/resources/page"
 	"time"
 )
 
