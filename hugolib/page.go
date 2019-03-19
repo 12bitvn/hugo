@@ -31,8 +31,6 @@ import (
 
 	"github.com/gohugoio/hugo/related"
 
-	"github.com/bep/gitmap"
-
 	"github.com/gohugoio/hugo/helpers"
 	"github.com/gohugoio/hugo/hugolib/pagemeta"
 	"github.com/gohugoio/hugo/resources/resource"
@@ -198,7 +196,7 @@ type Page struct {
 
 	Position `json:"-"`
 
-	GitInfo *gitmap.GitInfo
+	GitInfo *gitPageInfo
 
 	// This was added as part of getting the Nodes (taxonomies etc.) to work as
 	// Pages in Hugo 0.18.
@@ -1265,7 +1263,7 @@ func (p *Page) updateMetaData(frontmatter map[string]interface{}) error {
 	}
 
 	var gitAuthorDate time.Time
-	if p.GitInfo != nil {
+	if p.GitInfo != nil && (len(p.GitInfo.Commits) > 0) {
 		gitAuthorDate = p.GitInfo.AuthorDate
 	}
 
