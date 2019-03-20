@@ -148,7 +148,19 @@ type Site struct {
 
 	publisher publisher.Publisher
 
+	menus navigation.Menus
+
+	// Shortcut to the home page. Note that this may be nil if
+	// home page, for some odd reason, is disabled.
+	home *pageState
+
+	// The last modification date of this site.
+	lastmod time.Time
+
+	// Lazily loaded site dependencies
+	init *siteInit
 	hooks map[string]string
+
 }
 
 type siteConfigHolder struct {
@@ -1182,7 +1194,6 @@ func (s *Site) Initialise() (err error) {
 }
 
 func (s *Site) initialize() (err error) {
-	s.Menus = Menus{}
 	if err := s.initializeHooks(); err != nil {
 		return err
 	}
@@ -1295,9 +1306,6 @@ func (s *Site) initializeSiteInfo() error {
 		owner:                          s.h,
 		s:                              s,
 		hugoInfo:                       hugo.NewInfo(s.Cfg.GetString("environment")),
-		// TODO(bep) make this Menu and similar into delegate methods on SiteInfo
-		Taxonomies: s.Taxonomies,
-		Authors:    s.getAuthorsConfig(),
 	}
 
 	rssOutputFormat, found := s.outputFormats[page.KindHome].GetByName(output.RSSFormat.Name)

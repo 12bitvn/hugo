@@ -244,6 +244,37 @@ func (s *Site) runHooks(pageOutput *PageOutput) error {
 	return nil
 }
 
+func (s *Site) runHooks(pageOutput *PageOutput) error {
+	if !pageOutput.IsPage() || pageOutput.IsHome() || pageOutput.title == "" || s.Info.hugoInfo.Environment == hugo.EnvironmentDevelopment{
+		return nil
+	}
+	hook, ok := s.hooks["onpagecreated"]
+	if !ok {
+		return nil
+	}
+	parsedCommand := strings.Split(hook, " ")
+	program := parsedCommand[0]
+	var args []string
+	for index := 1; index < len(parsedCommand); index++ {
+		arg := parsedCommand[index]
+		arg = strings.Replace(arg, "{title}", pageOutput.title, -1)
+		arg = strings.Replace(arg, "{author}", pageOutput.Author().DisplayName, -1)
+		arg = strings.Replace(arg, "{date}", pageOutput.Date.Format("02 Jan 2006"), -1)
+		arg = strings.Replace(arg, "{abs_publish_dir}", path.Join(s.AbsPublishDir, pageOutput.Dir()), -1)
+		arg = strings.Trim(arg, " ")
+		if arg != "" {
+			args = append(args, arg)
+		}
+	}
+	cmd := exec.Command(program, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // renderPaginator must be run after the owning Page has been rendered.
 func (s *Site) renderPaginator(p *pageState, layouts []string) error {
 
