@@ -164,6 +164,8 @@ type Site struct {
 	shortcodePlaceholderFunc func() string
 
 	publisher publisher.Publisher
+
+	hooks map[string]string
 }
 
 type siteRenderingContext struct {
@@ -1129,7 +1131,9 @@ func (s *Site) Initialise() (err error) {
 
 func (s *Site) initialize() (err error) {
 	s.Menus = Menus{}
-
+	if err := s.initializeHooks(); err != nil {
+		return err
+	}
 	return s.initializeSiteInfo()
 }
 
@@ -1151,6 +1155,29 @@ func (s *SiteInfo) SitemapAbsURL() string {
 	}
 	p += sitemapDefault.Filename
 	return p
+}
+
+func (s *Site) initializeHooks() error {
+	s.hooks = s.Cfg.GetStringMapString("hooks")
+	return nil
+}
+
+func (s *Site) getAuthorsConfig() AuthorList {
+	authorsData := s.Cfg.GetStringMap("authors")
+	authors := AuthorList{}
+	for username, authorData := range authorsData {
+		authorMap := cast.ToStringMap(authorData)
+		author := Author{
+			DisplayName: authorMap["displayname"].(string),
+			Social:      AuthorSocial{},
+		}
+		socials, ok := authorMap["social"]
+		if ok {
+			author.Social = cast.ToStringMapString(socials)
+		}
+		authors[username] = author
+	}
+	return authors
 }
 
 func (s *Site) initializeSiteInfo() error {
@@ -1229,6 +1256,7 @@ func (s *Site) initializeSiteInfo() error {
 		hugoInfo:                       hugo.NewInfo(s.Cfg.GetString("environment")),
 		// TODO(bep) make this Menu and similar into delegate methods on SiteInfo
 		Taxonomies: s.Taxonomies,
+		Authors:    s.getAuthorsConfig(),
 	}
 
 	rssOutputFormat, found := s.outputFormats[KindHome].GetByName(output.RSSFormat.Name)

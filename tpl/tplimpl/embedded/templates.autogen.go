@@ -209,13 +209,11 @@ if (!doNotTrack) {
 {{ end }}{{ end }}
 
 {{- if .IsPage }}
-{{- range .Site.Authors }}{{ with .Social.facebook }}
-<meta property="article:author" content="https://www.facebook.com/{{ . }}" />{{ end }}{{ with .Site.Social.facebook }}
-<meta property="article:publisher" content="https://www.facebook.com/{{ . }}" />{{ end }}
-<meta property="article:section" content="{{ .Section }}" />
-{{- with .Params.tags }}{{ range first 6 . }}
-<meta property="article:tag" content="{{ . }}" />{{ end }}{{ end }}
-{{- end }}{{ end }}
+	<meta property="article:section" content="{{ .Section }}" />
+	{{- with .Params.tags }}{{ range first 6 . }}<meta property="article:tag" content="{{ . }}" />{{ end }}{{ end }}
+	{{ with .Site.Social.facebook }}<meta property="article:publisher" content="https://www.facebook.com/{{ . }}" />{{ end }}
+	{{- range .Authors }}{{ with .Social.facebook }}<meta property="article:author" content="https://www.facebook.com/{{ . }}" />{{ end }}{{- end }}
+{{ end }}
 
 {{- /* Facebook Page Admin ID for Domain Insights */}}
 {{- with .Site.Social.facebook_admin }}<meta property="fb:admins" content="{{ . }}" />{{ end }}
@@ -515,7 +513,7 @@ if (!doNotTrack) {
 <meta name="twitter:site" content="@{{ . }}"/>
 {{ end -}}
 {{ range .Site.Authors }}
-{{ with .twitter -}}
+{{ with .Social.twitter -}}
 <meta name="twitter:creator" content="@{{ . }}"/>
 {{ end -}}
 {{ end -}}`},
