@@ -290,7 +290,7 @@ func (s *Site) render404() error {
 		s:    s,
 		kind: kind404,
 		urlPaths: pagemeta.URLPath{
-			URL: path.Join(s.GetURLLanguageBasePath(), "404.html"),
+			URL: "404.html",
 		},
 	},
 		output.HTMLFormat,
@@ -353,7 +353,7 @@ func (s *Site) renderRobotsTXT() error {
 		s:    s,
 		kind: kindRobotsTXT,
 		urlPaths: pagemeta.URLPath{
-			URL: path.Join(s.GetURLLanguageBasePath(), "robots.txt"),
+			URL: "robots.txt",
 		},
 	},
 		output.RobotsTxtFormat)
