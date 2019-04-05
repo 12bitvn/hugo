@@ -1287,6 +1287,7 @@ func (s *Site) initializeSiteInfo() error {
 		owner:                          s.h,
 		s:                              s,
 		hugoInfo:                       hugo.NewInfo(s.Cfg.GetString("environment")),
+		Authors:                        s.getAuthorsConfig(),
 	}
 
 	rssOutputFormat, found := s.outputFormats[page.KindHome].GetByName(output.RSSFormat.Name)
