@@ -15,14 +15,11 @@ package hugolib
 
 import (
 	"github.com/gohugoio/hugo/config"
+	"github.com/gohugoio/hugo/helpers"
+	"github.com/gohugoio/hugo/resources/page"
 	"github.com/tsuyoshiwada/go-gitlog"
 	"path/filepath"
 	"strings"
-
-	"github.com/bep/gitmap"
-	"github.com/gohugoio/hugo/config"
-	"github.com/gohugoio/hugo/resources/page"
-	"time"
 )
 
 // RevNumber alias for `-n <number>`
@@ -37,39 +34,28 @@ func (rev *RevFile) Args() []string {
 
 type gitInfo struct {
 	contentDir string
-	gitlog     gitlog.GitLog
+	repo       gitlog.GitLog
 }
 
-type gitPageInfo struct {
-	AbbreviatedHash string
-	AuthorName      string
-	AuthorEmail     string
-	AuthorDate      time.Time
-	Hash            string
-	Subject         string
-	Commits         []*gitlog.Commit
-	Contributors    map[string]*gitlog.Committer
-}
-
-func (g *gitInfo) forPage(p *Page) (*gitPageInfo, bool) {
+func (g *gitInfo) forPage(p page.Page) *helpers.GitPageInfo {
 	if g == nil {
-		return nil, false
+		return nil
 	}
 
-	name := strings.TrimPrefix(filepath.ToSlash(p.Filename()), g.contentDir)
+	name := strings.TrimPrefix(filepath.ToSlash(p.File().Filename()), g.contentDir)
 	name = strings.TrimPrefix(name, "/")
-	logs, err := g.gitlog.Log(&RevFile{FileName: name}, &gitlog.Params{IgnoreMerges: true})
+	logs, err := g.repo.Log(&RevFile{FileName: name}, &gitlog.Params{IgnoreMerges: true})
 	if err != nil {
-		return nil, false
+		return nil
 	}
 	if len(logs) == 0 {
-		return nil, false
+		return nil
 	}
 	contributors := map[string]*gitlog.Committer{}
 	for _, log := range logs {
 		contributors[log.Author.Name] = log.Committer
 	}
-	return &gitPageInfo{
+	return &helpers.GitPageInfo{
 		AbbreviatedHash: logs[0].Hash.Short,
 		AuthorName:      logs[0].Author.Name,
 		AuthorEmail:     logs[0].Author.Email,
@@ -78,7 +64,7 @@ func (g *gitInfo) forPage(p *Page) (*gitPageInfo, bool) {
 		Subject:         logs[0].Subject,
 		Commits:         logs,
 		Contributors:    contributors,
-	}, true
+	}
 }
 
 func newGitInfo(cfg config.Provider) (*gitInfo, error) {
@@ -86,5 +72,5 @@ func newGitInfo(cfg config.Provider) (*gitInfo, error) {
 	git := gitlog.New(&gitlog.Config{
 		Path: workingDir,
 	})
-	return &gitInfo{contentDir: workingDir, gitlog: git}, nil
+	return &gitInfo{contentDir: workingDir, repo: git}, nil
 }

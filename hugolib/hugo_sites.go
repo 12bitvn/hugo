@@ -29,7 +29,6 @@ import (
 
 	"github.com/gohugoio/hugo/source"
 
-	"github.com/bep/gitmap"
 	"github.com/gohugoio/hugo/config"
 	"github.com/spf13/afero"
 
@@ -136,7 +135,7 @@ func (h *HugoSites) Data() map[string]interface{} {
 	return h.data
 }
 
-func (h *HugoSites) gitInfoForPage(p page.Page) (*gitmap.GitInfo, error) {
+func (h *HugoSites) gitInfoForPage(p page.Page) (*helpers.GitPageInfo, error) {
 	if _, err := h.init.gitInfo.Do(); err != nil {
 		return nil, err
 	}

@@ -158,9 +158,8 @@ type Site struct {
 	lastmod time.Time
 
 	// Lazily loaded site dependencies
-	init *siteInit
+	init  *siteInit
 	hooks map[string]string
-
 }
 
 type siteConfigHolder struct {
@@ -1222,24 +1221,6 @@ func (s *SiteInfo) SitemapAbsURL() string {
 func (s *Site) initializeHooks() error {
 	s.hooks = s.Cfg.GetStringMapString("hooks")
 	return nil
-}
-
-func (s *Site) getAuthorsConfig() AuthorList {
-	authorsData := s.Cfg.GetStringMap("authors")
-	authors := AuthorList{}
-	for username, authorData := range authorsData {
-		authorMap := cast.ToStringMap(authorData)
-		author := Author{
-			DisplayName: authorMap["displayname"].(string),
-			Social:      AuthorSocial{},
-		}
-		socials, ok := authorMap["social"]
-		if ok {
-			author.Social = cast.ToStringMapString(socials)
-		}
-		authors[username] = author
-	}
-	return authors
 }
 
 func (s *Site) initializeSiteInfo() error {

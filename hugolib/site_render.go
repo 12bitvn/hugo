@@ -15,10 +15,7 @@ package hugolib
 
 import (
 	"fmt"
-	"github.com/gohugoio/hugo/common/hugo"
 	"github.com/pkg/errors"
-	"os"
-	"os/exec"
 	"path"
 	"strings"
 	"sync"
@@ -26,6 +23,8 @@ import (
 	"github.com/gohugoio/hugo/config"
 
 	"github.com/gohugoio/hugo/output"
+	"github.com/gohugoio/hugo/resources/page"
+	"github.com/gohugoio/hugo/resources/page/pagemeta"
 )
 
 type siteRenderContext struct {
@@ -158,62 +157,11 @@ func pageRenderer(
 			if err := s.renderPaginator(p, layouts); err != nil {
 				results <- err
 			}
-
-			if shouldRender {
-				if err := pageOutput.renderResources(); err != nil {
-					s.SendError(page.errorf(err, "failed to render page resources"))
-					continue
-				}
-			}
-
-			var layouts []string
-
-			if page.selfLayout != "" {
-				layouts = []string{page.selfLayout}
-			} else {
-				layouts, err = s.layouts(pageOutput)
-				if err != nil {
-					s.Log.ERROR.Printf("Failed to resolve layout for output %q for page %q: %s", outFormat.Name, page, err)
-					continue
-				}
-			}
-
-			switch pageOutput.outputFormat.Name {
-
-			case "RSS":
-				if err := s.renderRSS(pageOutput); err != nil {
-					results <- err
-				}
-			default:
-				targetPath, err := pageOutput.targetPath()
-				if err != nil {
-					s.Log.ERROR.Printf("Failed to create target path for output %q for page %q: %s", outFormat.Name, page, err)
-					continue
-				}
-
-				s.Log.DEBUG.Printf("Render %s to %q with layouts %q", pageOutput.Kind, targetPath, layouts)
-
-				if err := s.renderAndWritePage(&s.PathSpec.ProcessingStats.Pages, "page "+pageOutput.FullFilePath(), targetPath, pageOutput, layouts...); err != nil {
-					results <- err
-				}
-
-				if err := s.runHooks(pageOutput); err != nil {
-					results <- err
-				}
-
-				// Only render paginators for the main output format
-				if i == 0 && pageOutput.IsNode() {
-					if err := s.renderPaginator(pageOutput); err != nil {
-						results <- err
-					}
-				}
-			}
-
 		}
 	}
 }
 
-func (s *Site) runHooks(pageOutput *PageOutput) error {
+/*func (s *Site) runHooks(pageOutput *PageOutput) error {
 	if !pageOutput.IsPage() || pageOutput.IsHome() || pageOutput.title == "" || s.Info.hugoInfo.Environment == hugo.EnvironmentDevelopment{
 		return nil
 	}
@@ -242,38 +190,7 @@ func (s *Site) runHooks(pageOutput *PageOutput) error {
 		return err
 	}
 	return nil
-}
-
-func (s *Site) runHooks(pageOutput *PageOutput) error {
-	if !pageOutput.IsPage() || pageOutput.IsHome() || pageOutput.title == "" || s.Info.hugoInfo.Environment == hugo.EnvironmentDevelopment{
-		return nil
-	}
-	hook, ok := s.hooks["onpagecreated"]
-	if !ok {
-		return nil
-	}
-	parsedCommand := strings.Split(hook, " ")
-	program := parsedCommand[0]
-	var args []string
-	for index := 1; index < len(parsedCommand); index++ {
-		arg := parsedCommand[index]
-		arg = strings.Replace(arg, "{title}", pageOutput.title, -1)
-		arg = strings.Replace(arg, "{author}", pageOutput.Author().DisplayName, -1)
-		arg = strings.Replace(arg, "{date}", pageOutput.Date.Format("02 Jan 2006"), -1)
-		arg = strings.Replace(arg, "{abs_publish_dir}", path.Join(s.AbsPublishDir, pageOutput.Dir()), -1)
-		arg = strings.Trim(arg, " ")
-		if arg != "" {
-			args = append(args, arg)
-		}
-	}
-	cmd := exec.Command(program, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
-}
+}*/
 
 // renderPaginator must be run after the owning Page has been rendered.
 func (s *Site) renderPaginator(p *pageState, layouts []string) error {

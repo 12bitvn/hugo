@@ -16,11 +16,11 @@
 package page
 
 import (
+	"github.com/gohugoio/hugo/helpers"
 	"html/template"
 	"os"
 	"time"
 
-	"github.com/bep/gitmap"
 	"github.com/gohugoio/hugo/navigation"
 
 	"github.com/gohugoio/hugo/common/hugo"
@@ -171,7 +171,7 @@ func (p *nopPage) GetParam(key string) interface{} {
 	return nil
 }
 
-func (p *nopPage) GitInfo() *gitmap.GitInfo {
+func (p *nopPage) GitInfo() **helpers.GitPageInfo {
 	return nil
 }
 

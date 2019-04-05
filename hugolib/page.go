@@ -43,8 +43,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bep/gitmap"
-
 	"github.com/gohugoio/hugo/helpers"
 
 	"github.com/gohugoio/hugo/common/herrors"
@@ -301,7 +299,7 @@ func (p *pageState) Eq(other interface{}) bool {
 	return p == pp
 }
 
-func (p *pageState) GitInfo() *gitmap.GitInfo {
+func (p *pageState) GitInfo() *helpers.GitPageInfo {
 	return p.gitInfo
 }
 

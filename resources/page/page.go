@@ -16,9 +16,9 @@
 package page
 
 import (
+	"github.com/gohugoio/hugo/helpers"
 	"html/template"
 
-	"github.com/bep/gitmap"
 	"github.com/gohugoio/hugo/config"
 
 	"github.com/gohugoio/hugo/common/hugo"
@@ -90,7 +90,7 @@ type GetPageProvider interface {
 
 // GitInfoProvider provides Git info.
 type GitInfoProvider interface {
-	GitInfo() *gitmap.GitInfo
+	GitInfo() *helpers.GitPageInfo
 }
 
 // InSectionPositioner provides section navigation.
