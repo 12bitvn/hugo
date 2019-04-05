@@ -16,33 +16,12 @@ package hugolib
 import (
 	"bytes"
 	"fmt"
-	"math/rand"
-	"reflect"
-
-	"github.com/gohugoio/hugo/common/hugo"
-
-	"github.com/gohugoio/hugo/common/maps"
-	"github.com/gohugoio/hugo/common/urls"
-	"github.com/gohugoio/hugo/media"
-
-	"github.com/gohugoio/hugo/langs"
-
-	"github.com/gohugoio/hugo/related"
-
-	"github.com/gohugoio/hugo/helpers"
-	"github.com/gohugoio/hugo/hugolib/pagemeta"
-	"github.com/gohugoio/hugo/resources/resource"
-
-	"github.com/gohugoio/hugo/output"
-	"github.com/mitchellh/mapstructure"
-
 	"html/template"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
-
 	"github.com/gohugoio/hugo/helpers"
 
 	"github.com/gohugoio/hugo/common/herrors"
@@ -74,182 +53,12 @@ var (
 	nopPageOutput     = &pageOutput{pagePerOutputProviders: nopPagePerOutput}
 )
 
-type Page struct {
-	*pageInit
-	*pageContentInit
-
-	// Kind is the discriminator that identifies the different page types
-	// in the different page collections. This can, as an example, be used
-	// to to filter regular pages, find sections etc.
-	// Kind will, for the pages available to the templates, be one of:
-	// page, home, section, taxonomy and taxonomyTerm.
-	// It is of string type to make it easy to reason about in
-	// the templates.
-	Kind string
-
-	// Since Hugo 0.18 we got rid of the Node type. So now all pages are ...
-	// pages (regular pages, home page, sections etc.).
-	// Sections etc. will have child pages. These were earlier placed in .Data.Pages,
-	// but can now be more intuitively also be fetched directly from .Pages.
-	// This collection will be nil for regular pages.
-	Pages Pages
-
-	// Since Hugo 0.32, a Page can have resources such as images and CSS associated
-	// with itself. The resource will typically be placed relative to the Page,
-	// but templates should use the links (Permalink and RelPermalink)
-	// provided by the Resource object.
-	Resources resource.Resources
-
-	// This is the raw front matter metadata that is going to be assigned to
-	// the Resources above.
-	resourcesMetadata []map[string]interface{}
-
-	// translations will contain references to this page in other language
-	// if available.
-	translations Pages
-
-	// A key that maps to translation(s) of this page. This value is fetched
-	// from the page front matter.
-	translationKey string
-
-	// Params contains configuration defined in the params section of page frontmatter.
-	params map[string]interface{}
-
-	// Content sections
-	contentv        template.HTML
-	summary         template.HTML
-	TableOfContents template.HTML
-
-	// Passed to the shortcodes
-	pageWithoutContent *PageWithoutContent
-
-	Aliases []string
-
-	Images []Image
-	Videos []Video
-
-	truncated bool
-	Draft     bool
-	Status    string
-
-	// PageMeta contains page stats such as word count etc.
-	PageMeta
-
-	// Markup contains the markup type for the content.
-	Markup string
-
-	extension   string
-	contentType string
-
-	Layout string
-
-	// For npn-renderable pages (see IsRenderable), the content itself
-	// is used as template and the template name is stored here.
-	selfLayout string
-
-	linkTitle string
-
-	// Content items.
-	pageContent
-
-	// whether the content is in a CJK language.
-	isCJKLanguage bool
-
-	// the content stripped for HTML
-	plain      string // TODO should be []byte
-	plainWords []string
-
-	// rendering configuration
-	renderingConfig *helpers.BlackFriday
-
-	// menus
-	pageMenus PageMenus
-
-	source.File
-
-	Position `json:"-"`
-
-	GitInfo *gitPageInfo
-
-	// This was added as part of getting the Nodes (taxonomies etc.) to work as
-	// Pages in Hugo 0.18.
-	// It is deliberately named similar to Section, but not exported (for now).
-	// We currently have only one level of section in Hugo, but the page can live
-	// any number of levels down the file path.
-	// To support taxonomies like /categories/hugo etc. we will need to keep track
-	// of that information in a general way.
-	// So, sections represents the path to the content, i.e. a content file or a
-	// virtual content file in the situations where a taxonomy or a section etc.
-	// isn't accomanied by one.
-	sections []string
-
-	// Will only be set for sections and regular pages.
-	parent *Page
-
-	// When we create paginator pages, we create a copy of the original,
-	// but keep track of it here.
-	origOnCopy *Page
-
-	// Will only be set for section pages and the home page.
-	subSections Pages
-
-	s *Site
-
-	// Pulled over from old Node. TODO(bep) reorg and group (embed)
-
-	Site *SiteInfo `json:"-"`
-
-	title       string
-	Description string
-	Keywords    []string
-	data        map[string]interface{}
-
-	pagemeta.PageDates
-
-	Sitemap Sitemap
-	pagemeta.URLPath
-	frontMatterURL string
-
-	permalink    string
-	relPermalink string
-
-	// relative target path without extension and any base path element
-	// from the baseURL or the language code.
-	// This is used to construct paths in the page resources.
-	relTargetPathBase string
-	// Is set to a forward slashed path if this is a Page resources living in a folder below its owner.
-	resourcePath string
-
-	// This is enabled if it is a leaf bundle (the "index.md" type) and it is marked as headless in front matter.
-	// Being headless means that
-	// 1. The page itself is not rendered to disk
-	// 2. It is not available in .Site.Pages etc.
-	// 3. But you can get it via .Site.GetPage
-	headless bool
-
-	layoutDescriptor output.LayoutDescriptor
-
-	scratch *maps.Scratch
-
-	// It would be tempting to use the language set on the Site, but in they way we do
-	// multi-site processing, these values may differ during the initial page processing.
-	language *langs.Language
-
-	lang string
-
-	// When in Fast Render Mode, we only render a sub set of the pages, i.e. the
-	// pages the user is working on. There are, however, situations where we need to
-	// signal other pages to be rendered.
-	forceRender bool
-
-	// The output formats this page will be rendered to.
-	outputFormats output.Formats
-
-	// This is the PageOutput that represents the first item in outputFormats.
-	// Use with care, as there are potential for inifinite loops.
-	mainPageOutput *PageOutput
-
-	targetPathDescriptorPrototype *targetPathDescriptor
+// pageContext provides contextual information about this page, for error
+// logging and similar.
+type pageContext interface {
+	posOffset(offset int) text.Position
+	wrapError(err error) error
+	getRenderingConfig() *helpers.BlackFriday
 }
 
 // wrapErr adds some context to the given error if possible.
@@ -750,42 +559,10 @@ Loop:
 				if item.IsNonWhitespace() {
 					p.truncated = true
 
-	var mtime time.Time
-	if p.FileInfo() != nil {
-		mtime = p.FileInfo().ModTime()
-	}
-
-	var gitAuthorDate time.Time
-	if p.GitInfo != nil && (len(p.GitInfo.Commits) > 0) {
-		gitAuthorDate = p.GitInfo.AuthorDate
-	}
-
-	descriptor := &pagemeta.FrontMatterDescriptor{
-		Frontmatter:   frontmatter,
-		Params:        p.params,
-		Dates:         &p.PageDates,
-		PageURLs:      &p.URLPath,
-		BaseFilename:  p.ContentBaseName(),
-		ModTime:       mtime,
-		GitAuthorDate: gitAuthorDate,
-	}
-
-	// Handle the date separately
-	// TODO(bep) we need to "do more" in this area so this can be split up and
-	// more easily tested without the Page, but the coupling is strong.
-	err := p.s.frontmatterHandler.HandleDates(descriptor)
-	if err != nil {
-		p.s.Log.ERROR.Printf("Failed to handle dates for page %q: %s", p.Path(), err)
-	}
-
-	var draft, published, isCJKLanguage *bool
-	for k, v := range frontmatter {
-		loki := strings.ToLower(k)
-
-		if loki == "published" { // Intentionally undocumented
-			vv, err := cast.ToBoolE(v)
-			if err == nil {
-				published = &vv
+					// Done
+					return false
+				}
+				return true
 			}
 			iter.PeekWalk(f)
 

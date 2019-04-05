@@ -1890,6 +1890,24 @@ func (s *Site) newPage(kind string, sections ...string) *pageState {
 	return p
 }
 
+func (s *Site) getAuthorsConfig() page.AuthorList {
+	authorsData := s.Cfg.GetStringMap("authors")
+	authors := page.AuthorList{}
+	for username, authorData := range authorsData {
+		authorMap := cast.ToStringMap(authorData)
+		author := page.Author{
+			DisplayName: authorMap["displayname"].(string),
+			Social:      page.AuthorSocial{},
+		}
+		socials, ok := authorMap["social"]
+		if ok {
+			author.Social = cast.ToStringMapString(socials)
+		}
+		authors[username] = author
+	}
+	return authors
+}
+
 func (s *Site) shouldBuild(p page.Page) bool {
 	return shouldBuild(s.BuildFuture, s.BuildExpired,
 		s.BuildDrafts, p.Draft(), p.PublishDate(), p.ExpiryDate())
