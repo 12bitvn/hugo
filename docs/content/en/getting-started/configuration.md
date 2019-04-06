@@ -283,11 +283,6 @@ verboseLog (false)
 watch (false)
 : Watch filesystem for changes and recreate as needed.
 
-hooks
-: Command to execute on some events. Tag supported: `{title}`, `{date}`, `{author}`.
-
-1. `onPageCreated`: Called when single page created
-
 {{% note %}}
 If you are developing your site on a \*nix machine, here is a handy shortcut for finding a configuration option from the command line:
 ```
